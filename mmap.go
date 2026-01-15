@@ -8,10 +8,10 @@
 // Package mmap allows mapping files into memory. It tries to provide a simple, reasonably portable interface,
 // but doesn't go out of its way to abstract away every little platform detail.
 // This specifically means:
-//	* forked processes may or may not inherit mappings
-//	* a file's timestamp may or may not be updated by writes through mappings
-//	* specifying a size larger than the file's actual size can increase the file's size
-//	* If the mapped file is being modified by another process while your program's running, don't expect consistent results between platforms
+//   - forked processes may or may not inherit mappings
+//   - a file's timestamp may or may not be updated by writes through mappings
+//   - specifying a size larger than the file's actual size can increase the file's size
+//   - If the mapped file is being modified by another process while your program's running, don't expect consistent results between platforms
 package mmap
 
 import (
@@ -25,18 +25,10 @@ const (
 	// RDONLY maps the memory read-only.
 	// Attempts to write to the MMap object will result in undefined behavior.
 	RDONLY = 0
-	// RDWR maps the memory as read-write. Writes to the MMap object will update the
-	// underlying file.
-	RDWR = 1 << iota
-	// COPY maps the memory as copy-on-write. Writes to the MMap object will affect
-	// memory, but the underlying file will remain unchanged.
-	COPY
-	// If EXEC is set, the mapped memory is marked as executable.
-	EXEC
 )
 
 const (
-	// If the ANON flag is set, the mapped memory will not be backed by a file.
+	// ANON flag indicates, the mapped memory will not be backed by a file.
 	ANON = 1 << iota
 )
 
@@ -60,7 +52,7 @@ func MapRegion(f *os.File, length int, prot, flags int, offset int64) (MMap, err
 
 	var fd uintptr
 	if flags&ANON == 0 {
-		fd = uintptr(f.Fd())
+		fd = f.Fd()
 		if length < 0 {
 			fi, err := f.Stat()
 			if err != nil {
@@ -88,20 +80,15 @@ func (m *MMap) addrLen() (uintptr, uintptr) {
 
 // Lock keeps the mapped region in physical memory, ensuring that it will not be
 // swapped out.
-func (m MMap) Lock() error {
+func (m *MMap) Lock() error {
 	return m.lock()
 }
 
 // Unlock reverses the effect of Lock, allowing the mapped region to potentially
 // be swapped out.
 // If m is already unlocked, aan error will result.
-func (m MMap) Unlock() error {
+func (m *MMap) Unlock() error {
 	return m.unlock()
-}
-
-// Flush synchronizes the mapping's contents to the file's contents on disk.
-func (m MMap) Flush() error {
-	return m.flush()
 }
 
 // Unmap deletes the memory mapped region, flushes any remaining changes, and sets

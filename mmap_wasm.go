@@ -10,18 +10,14 @@ func mmap(len int, inprot, inflags, fd uintptr, off int64) ([]byte, error) {
 	return nil, syscall.ENOTSUP
 }
 
-func (m MMap) flush() error {
+func (m *MMap) lock() error {
 	return syscall.ENOTSUP
 }
 
-func (m MMap) lock() error {
+func (m *MMap) unlock() error {
 	return syscall.ENOTSUP
 }
 
-func (m MMap) unlock() error {
-	return syscall.ENOTSUP
-}
-
-func (m MMap) unmap() error {
+func (m *MMap) unmap() error {
 	return syscall.ENOTSUP
 }

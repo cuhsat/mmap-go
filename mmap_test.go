@@ -8,8 +8,6 @@
 package mmap
 
 import (
-	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,8 +18,8 @@ var testPath = filepath.Join(os.TempDir(), "testdata")
 
 func init() {
 	f := openFile(os.O_RDWR | os.O_CREATE | os.O_TRUNC)
-	f.Write(testData)
-	f.Close()
+	_, _ = f.Write(testData)
+	_ = f.Close()
 }
 
 func openFile(flags int) *os.File {
@@ -34,7 +32,9 @@ func openFile(flags int) *os.File {
 
 func TestUnmap(t *testing.T) {
 	f := openFile(os.O_RDONLY)
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 	mmap, err := Map(f, RDONLY, 0)
 	if err != nil {
 		t.Errorf("error mapping: %s", err)
@@ -44,60 +44,13 @@ func TestUnmap(t *testing.T) {
 	}
 }
 
-func TestReadWrite(t *testing.T) {
-	f := openFile(os.O_RDWR)
-	defer f.Close()
-	mmap, err := Map(f, RDWR, 0)
-	if err != nil {
-		t.Errorf("error mapping: %s", err)
-	}
-	defer mmap.Unmap()
-	if !bytes.Equal(testData, mmap) {
-		t.Errorf("mmap != testData: %q, %q", mmap, testData)
-	}
-
-	mmap[9] = 'X'
-	mmap.Flush()
-
-	fileData, err := ioutil.ReadAll(f)
-	if err != nil {
-		t.Errorf("error reading file: %s", err)
-	}
-	if !bytes.Equal(fileData, []byte("012345678XABCDEF")) {
-		t.Errorf("file wasn't modified")
-	}
-
-	// leave things how we found them
-	mmap[9] = '9'
-	mmap.Flush()
-}
-
 func TestProtFlagsAndErr(t *testing.T) {
 	f := openFile(os.O_RDONLY)
-	defer f.Close()
-	if _, err := Map(f, RDWR, 0); err == nil {
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
+	if _, err := Map(f, RDONLY, 0); err == nil {
 		t.Errorf("expected error")
-	}
-}
-
-func TestFlags(t *testing.T) {
-	f := openFile(os.O_RDWR)
-	defer f.Close()
-	mmap, err := Map(f, COPY, 0)
-	if err != nil {
-		t.Errorf("error mapping: %s", err)
-	}
-	defer mmap.Unmap()
-
-	mmap[9] = 'X'
-	mmap.Flush()
-
-	fileData, err := ioutil.ReadAll(f)
-	if err != nil {
-		t.Errorf("error reading file: %s", err)
-	}
-	if !bytes.Equal(fileData, testData) {
-		t.Errorf("file was modified")
 	}
 }
 
@@ -113,9 +66,9 @@ func TestNonZeroOffset(t *testing.T) {
 		panic(err.Error())
 	}
 
-	bigData := make([]byte, 2*pageSize, 2*pageSize)
-	fileobj.Write(bigData)
-	fileobj.Close()
+	bigData := make([]byte, 2*pageSize)
+	_, _ = fileobj.Write(bigData)
+	_ = fileobj.Close()
 
 	// Map the first page by itself
 	fileobj, err = os.OpenFile(bigFilePath, os.O_RDONLY, 0)
@@ -126,8 +79,8 @@ func TestNonZeroOffset(t *testing.T) {
 	if err != nil {
 		t.Errorf("error mapping file: %s", err)
 	}
-	m.Unmap()
-	fileobj.Close()
+	_ = m.Unmap()
+	_ = fileobj.Close()
 
 	// Map the second page by itself
 	fileobj, err = os.OpenFile(bigFilePath, os.O_RDONLY, 0)
@@ -148,14 +101,14 @@ func TestNonZeroOffset(t *testing.T) {
 		t.Error("expect error because offset is not multiple of page size")
 	}
 
-	fileobj.Close()
+	_ = fileobj.Close()
 }
 
 func TestAnonymousMapping(t *testing.T) {
 	const size = 4 * 1024
 
 	// Make an anonymous region
-	mem, err := MapRegion(nil, size, RDWR, ANON, 0)
+	mem, err := MapRegion(nil, size, RDONLY, ANON, 0)
 	if err != nil {
 		t.Fatalf("failed to allocate memory for buffer: %v", err)
 	}

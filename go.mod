@@ -1,5 +1,5 @@
-module github.com/edsrzf/mmap-go
+module github.com/cuhsat/mmap-go
 
-go 1.17
+go 1.25
 
-require golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+require golang.org/x/sys v0.40.0

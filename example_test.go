@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/edsrzf/mmap-go"
+	"github.com/cuhsat/mmap-go"
 )
 
 func ExampleMapRegion() {
-	m, err := mmap.MapRegion(nil, 100, mmap.RDWR, mmap.ANON, 0)
+	m, err := mmap.MapRegion(nil, 100, mmap.RDONLY, mmap.ANON, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,9 +35,11 @@ func ExampleMap() {
 		log.Fatal(err)
 	}
 	// The file must be closed, even after calling Unmap.
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 
-	m, err := mmap.Map(f, mmap.RDWR, 0)
+	m, err := mmap.Map(f, mmap.RDONLY, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
