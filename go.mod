@@ -1,4 +1,4 @@
-module github.com/cuhsat/mmap-go
+module github.com/cuhsat/go-mmap
 
 go 1.25
 
