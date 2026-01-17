@@ -49,7 +49,6 @@ func ExampleMap() {
 	fmt.Println(string(m))
 
 	// The Unmap method should be called when finished with it to avoid leaking memory
-	// and to ensure that writes are flushed to disk.
 	if err := m.Unmap(); err != nil {
 		log.Fatal(err)
 	}

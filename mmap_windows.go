@@ -83,11 +83,6 @@ func (m *MMap) unlock() error {
 }
 
 func (m *MMap) unmap() error {
-	err := m.flush()
-	if err != nil {
-		return err
-	}
-
 	addr := m.header().Data
 	// Lock the UnmapViewOfFile along with the handleMap deletion.
 	// As soon as we unmap the view, the OS is free to give the

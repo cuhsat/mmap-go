@@ -91,9 +91,9 @@ func (m *MMap) Unlock() error {
 	return m.unlock()
 }
 
-// Unmap deletes the memory mapped region, flushes any remaining changes, and sets
+// Unmap deletes the memory mapped region and sets
 // m to nil.
-// Trying to read or write any remaining references to m after Unmap is called will
+// Trying to read any remaining references to m after Unmap is called will
 // result in undefined behavior.
 // Unmap should only be called on the slice value that was originally returned from
 // a call to Map. Calling Unmap on a derived slice may cause errors.
