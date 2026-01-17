@@ -91,7 +91,7 @@ func (m *MMap) unmap() error {
 	// we're trying to remove our old addr/handle pair.
 	handleLock.Lock()
 	defer handleLock.Unlock()
-	err = windows.UnmapViewOfFile(addr)
+	err := windows.UnmapViewOfFile(addr)
 	if err != nil {
 		return err
 	}
